@@ -1,103 +1,213 @@
-import Image from "next/image";
+// app/page.tsx
+'use client'
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useEffect, useState } from 'react'
+import KpiCard from "@/components/cards/KpiCard"
+import LineChartCard from "@/components/charts/LineChartCard"
+import BarChartCard from "@/components/charts/BarChartCard"
+import PieChartCard from "@/components/charts/PieChartCard"
+import { DataTable } from "@/components/tables/DataTable"
+import { ColumnDef } from "@tanstack/react-table"
+import { configService, type User, type KpiData } from "@/lib/config"
+import { 
+  DollarSign, 
+  Users, 
+  TrendingUp, 
+  CheckCircle,
+  BarChart3,
+  PieChart as PieChartIcon
+} from "lucide-react"
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+// Icon mapping for dynamic KPI icons
+const iconMap: Record<string, any> = {
+  DollarSign,
+  Users,
+  TrendingUp,
+  CheckCircle,
+  BarChart3,
+  PieChartIcon
+}
+
+// Define table columns
+const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: 'id',
+    header: 'ID',
+  },
+  {
+    accessorKey: 'name',
+    header: 'Name',
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
+  },
+  {
+    accessorKey: 'role',
+    header: 'Role',
+  },
+  {
+    accessorKey: 'plan',
+    header: 'Plan',
+  },
+]
+
+export default function HomePage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [kpis, setKpis] = useState<KpiData[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true)
+        
+        // Load configuration
+        const config = await configService.loadConfig()
+        setKpis(config.kpis)
+        
+        // Load users
+        const usersResponse = await fetch('/api/users')
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json()
+          setUsers(usersData)
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // Listen for dashboard search events
+  useEffect(() => {
+    const handleSearch = (event: CustomEvent) => {
+      setSearchQuery(event.detail.toLowerCase())
+    }
+
+    window.addEventListener('dashboard-search', handleSearch as EventListener)
+    
+    return () => {
+      window.removeEventListener('dashboard-search', handleSearch as EventListener)
+    }
+  }, [])
+
+  // Filter dashboard content based on search
+  const filteredKpis = kpis.filter(kpi =>
+    searchQuery === "" ||
+    kpi.title.toLowerCase().includes(searchQuery) ||
+    kpi.value.toLowerCase().includes(searchQuery)
+  )
+
+  const filteredUsers = users.filter(user =>
+    searchQuery === "" ||
+    user.name.toLowerCase().includes(searchQuery) ||
+    user.email.toLowerCase().includes(searchQuery) ||
+    (user.role && user.role.toLowerCase().includes(searchQuery)) ||
+    (user.plan && user.plan.toLowerCase().includes(searchQuery))
+  )
+
+  // Determine what sections to show based on search
+  const showKpis = searchQuery === "" || filteredKpis.length > 0
+  const showCharts = searchQuery === "" ||
+    searchQuery.includes("chart") ||
+    searchQuery.includes("revenue") ||
+    searchQuery.includes("sales") ||
+    searchQuery.includes("user") ||
+    searchQuery.includes("growth")
+  const showTable = searchQuery === "" || filteredUsers.length > 0 || searchQuery.includes("user") || searchQuery.includes("table")
+
+  if (isLoading) {
+    return (
+      <div className="p-6 sm:p-10 space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-64 mb-6"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 dark:bg-slate-700 rounded"></div>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6 sm:p-10 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+        {searchQuery && (
+          <div className="text-sm text-muted-foreground">
+            Searching for: "{searchQuery}"
+          </div>
+        )}
+      </div>
+
+      {/* Show no results message if search returns nothing */}
+      {searchQuery && !showKpis && !showCharts && !showTable && (
+        <div className="text-center py-12">
+          <div className="text-muted-foreground">
+            <p className="text-lg mb-2">No results found for "{searchQuery}"</p>
+            <p className="text-sm">Try searching for: revenue, users, growth, sales, or user names</p>
+          </div>
+        </div>
+      )}
+
+      {/* KPI Cards */}
+      {showKpis && (
+        <div className="space-y-4">
+          {searchQuery && <h2 className="text-lg font-semibold">Metrics</h2>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {filteredKpis.map((kpi, index) => {
+              const IconComponent = iconMap[kpi.icon]
+              return (
+                <KpiCard
+                  key={index}
+                  title={kpi.title}
+                  value={kpi.value}
+                  icon={IconComponent}
+                  trend={kpi.trend}
+                />
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Charts */}
+      {showCharts && (
+        <div className="space-y-6">
+          {searchQuery && <h2 className="text-lg font-semibold">Charts</h2>}
+          
+          {/* Line Chart */}
+          <div className="w-full max-w-4xl">
+            <LineChartCard />
+          </div>
+
+          {/* Bar Chart */}
+          <div className="w-full max-w-4xl">
+            <BarChartCard />
+          </div>
+
+          {/* Pie Chart */}
+          <div className="w-full max-w-4xl">
+            <PieChartCard />
+          </div>
+        </div>
+      )}
+
+      {/* Data Table */}
+      {showTable && (
+        <div className="w-full max-w-5xl space-y-4">
+          {searchQuery && <h2 className="text-lg font-semibold">User Data</h2>}
+          <h3 className="text-xl font-semibold">User Table</h3>
+          <DataTable columns={columns} data={filteredUsers} />
+        </div>
+      )}
     </div>
-  );
+  )
 }
