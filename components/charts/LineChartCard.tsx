@@ -40,23 +40,23 @@ export default function LineChartCard() {
     loadChartData()
   }, [])
 
-// Custom tooltip component for better styling
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-xl border border-gray-200/50 dark:border-slate-600/50 backdrop-blur-sm">
-        <p className="font-medium text-slate-900 dark:text-slate-100 mb-1">{label}</p>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-          <p className="text-primary font-semibold">
-            {payload[0].value.toLocaleString()} users
-          </p>
+  // Custom tooltip component for better styling
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-xl border border-gray-200/50 dark:border-slate-600/50 backdrop-blur-sm">
+          <p className="font-medium text-slate-900 dark:text-slate-100 mb-1">{label}</p>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-primary"></div>
+            <p className="text-primary font-semibold">
+              {payload[0].value.toLocaleString()} users
+            </p>
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
+    return null
   }
-  return null
-}
 
   if (isLoading) {
     return (
@@ -76,8 +76,35 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     )
   }
 
-  const totalGrowth = data[data.length - 1].value - data[0].value
-  const growthPercentage = ((totalGrowth / data[0].value) * 100).toFixed(1)
+  // ✅ Enhanced validation with proper TypeScript checks
+  if (!data || data.length < 2 || !data[0] || !data[data.length - 1]) {
+    return (
+      <div className="w-full h-full">
+        <Card className="group relative overflow-hidden transition-all duration-300 dark:bg-slate-900/50 border-0 bg-gradient-to-br from-white to-gray-50/30 dark:from-slate-900 dark:to-slate-800/50 backdrop-blur-sm w-full h-full">
+          <CardContent className="relative p-6 flex items-center justify-center h-[300px]">
+            <div className="text-center space-y-3">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto opacity-50" />
+              <p className="text-muted-foreground">No chart data available</p>
+              <p className="text-sm text-muted-foreground">Please check your configuration</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // ✅ Safe calculation with proper null checks
+  const firstDataPoint = data[0]
+  const lastDataPoint = data[data.length - 1]
+  
+  // Ensure both data points exist and have valid values
+  const totalGrowth = lastDataPoint?.value && firstDataPoint?.value 
+    ? lastDataPoint.value - firstDataPoint.value 
+    : 0
+    
+  const growthPercentage = firstDataPoint?.value && firstDataPoint.value !== 0
+    ? ((totalGrowth / firstDataPoint.value) * 100).toFixed(1)
+    : "0.0"
 
   return (
     <div className="w-full h-full">
@@ -105,11 +132,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
               </div>
             </div>
             
-            {/* Growth indicator */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold self-start sm:self-center">
-              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>+{growthPercentage}%</span>
-            </div>
+            {/* Growth indicator with safe display */}
+            {totalGrowth >= 0 ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold self-start sm:self-center">
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>+{growthPercentage}%</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-semibold self-start sm:self-center">
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
+                <span>{growthPercentage}%</span>
+              </div>
+            )}
           </div>
         </CardHeader>
 
@@ -139,7 +173,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                   <CartesianGrid 
                     strokeDasharray="3 3" 
                     stroke="#e2e8f0" 
-                    dark-stroke="#475569"
                     opacity={0.3}
                     horizontal={true}
                     vertical={false}
