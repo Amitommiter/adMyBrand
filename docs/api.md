@@ -8,7 +8,8 @@ The API is built using Next.js API Routes, providing a RESTful interface for the
 
 ### Base URL
 - **Development**: `http://localhost:3000/api`
-- **Production**: `https://your-domain.com/api`
+- **Production**: `https://admybrand-blond.vercel.app/api`
+
 
 ### Response Format
 All API responses follow a consistent format:

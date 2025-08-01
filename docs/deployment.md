@@ -121,7 +121,7 @@ Configure in your deployment platform:
 
 ```bash
 # Production Environment Variables
-NEXT_PUBLIC_APP_URL=https://your-domain.com
+NEXT_PUBLIC_APP_URL=https://admybrand-blond.vercel.app
 CUSTOM_KEY=prod_key_here
 DATABASE_URL=your_prod_database_url
 NODE_ENV=production
@@ -132,7 +132,7 @@ NODE_ENV=production
 ```typescript
 // lib/config.ts
 const config = {
-  apiUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  apiUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://admybrand-blond.vercel.app',
   isProduction: process.env.NODE_ENV === 'production',
   customKey: process.env.CUSTOM_KEY,
 }
@@ -150,7 +150,7 @@ const nextConfig = {
   
   // Optimize images
   images: {
-    domains: ['your-domain.com'],
+    domains: ['admybrand-blond.vercel.app'],
     formats: ['image/webp', 'image/avif'],
   },
   

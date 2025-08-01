@@ -64,11 +64,13 @@ pnpm dev
 
 ### 4. Open Your Browser
 
-Navigate to [http://localhost:3000](http://localhost:3000) to see the dashboard in action.
+Navigate to [https://admybrand-blond.vercel.app/](https://admybrand-blond.vercel.app/) to see the dashboard in action.
 
 ## 🎯 What You'll See
 
 After starting the development server, you'll see:
+
+> **💡 Live Demo**: You can also view the live dashboard at [https://admybrand-blond.vercel.app/](https://admybrand-blond.vercel.app/) without setting up locally.
 
 - **Dashboard Overview**: Main page with KPIs and charts
 - **Navigation**: Sidebar with links to different sections

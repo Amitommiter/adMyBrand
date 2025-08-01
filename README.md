@@ -16,7 +16,9 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the dashboard in action.
+Open [https://admybrand-blond.vercel.app/](https://admybrand-blond.vercel.app/) to see the dashboard in action.
+
+> **🚀 Live Demo**: [https://admybrand-blond.vercel.app/](https://admybrand-blond.vercel.app/)
 
 ## ✨ Features
 
