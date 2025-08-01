@@ -152,7 +152,7 @@ This file provides a quick reference to all documentation files in the ADmyBRAND
 
 ### Contact
 - **Maintainer**: ADmyBRAND Team
-- **Last Updated**: December 2024
+- **Last Updated**: July 2025
 - **Version**: 1.0.0
 
 ---
