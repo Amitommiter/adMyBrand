@@ -44,7 +44,7 @@ export default function ConversionFunnelTable({ data, isLoading = false }: Conve
 
   // Calculate total conversion rate from start to end
   const totalConversionRate = data.length > 0 ? 
-    (data[data.length - 1].conversions / data[0].visitors) * 100 : 0
+    ((data[data.length - 1]?.conversions ?? 0) / (data[0]?.visitors ?? 1)) * 100 : 0
 
   return (
     <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl dark:bg-slate-900/50 border-0 bg-gradient-to-br from-white to-gray-50/30 dark:from-slate-900 dark:to-slate-800/50 backdrop-blur-sm">
@@ -167,7 +167,7 @@ export default function ConversionFunnelTable({ data, isLoading = false }: Conve
               <span className="text-sm font-medium">Total Visitors</span>
             </div>
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {data[0]?.visitors.toLocaleString() || '0'}
+              {(data[0]?.visitors ?? 0).toLocaleString()}
             </div>
           </div>
 
@@ -177,7 +177,7 @@ export default function ConversionFunnelTable({ data, isLoading = false }: Conve
               <span className="text-sm font-medium">Final Conversions</span>
             </div>
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {data[data.length - 1]?.conversions.toLocaleString() || '0'}
+              {(data[data.length - 1]?.conversions ?? 0).toLocaleString()}
             </div>
           </div>
 
@@ -188,7 +188,7 @@ export default function ConversionFunnelTable({ data, isLoading = false }: Conve
             </div>
             <div className="text-2xl font-bold text-red-600 dark:text-red-400">
               {data.length > 0 ? 
-                ((data[0].visitors - data[data.length - 1].conversions) / data[0].visitors * 100).toFixed(1) 
+                (((data[0]?.visitors ?? 0) - (data[data.length - 1]?.conversions ?? 0)) / (data[0]?.visitors ?? 1) * 100).toFixed(1) 
                 : '0'
               }%
             </div>

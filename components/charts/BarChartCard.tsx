@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-slate-600">
         <p className="font-medium text-slate-900 dark:text-slate-100">{label}</p>
         <p className="text-primary font-semibold">
-          Sales: ${payload[0].value.toLocaleString()}
+          Sales: ${(payload[0]?.value ?? 0).toLocaleString()}
         </p>
       </div>
     )
