@@ -45,6 +45,9 @@ import {
   EyeOff
 } from 'lucide-react'
 
+// Prevent prerendering for this page
+export const dynamic = 'force-dynamic'
+
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)

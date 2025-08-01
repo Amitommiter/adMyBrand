@@ -501,4 +501,7 @@ function ReportsPage() {
   )
 }
 
+// Prevent prerendering for this page
+export const dynamic = 'force-dynamic'
+
 export default ReportsPage

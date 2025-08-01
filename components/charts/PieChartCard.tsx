@@ -100,7 +100,7 @@ const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name
     )
   }
 
-  const totalUsers = data.reduce((sum, item) => sum + item.value, 0)
+  const totalUsers = data.reduce((sum, item) => sum + (item.value || 0), 0)
 
   return (
     <div className="w-full h-full">

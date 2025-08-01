@@ -23,7 +23,7 @@ export default function LineChartCard() {
       try {
         setIsLoading(true)
         const config = await configService.loadConfig()
-        if (config.charts?.lineChart) {
+        if (config.charts?.lineChart && Array.isArray(config.charts.lineChart)) {
           setData(config.charts.lineChart)
         } else {
           console.warn('Line chart data not found in config')
@@ -49,7 +49,7 @@ export default function LineChartCard() {
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-primary"></div>
             <p className="text-primary font-semibold">
-              {payload[0].value.toLocaleString()} users
+              {payload[0]?.value?.toLocaleString() ?? 'N/A'} users
             </p>
           </div>
         </div>
@@ -58,6 +58,7 @@ export default function LineChartCard() {
     return null
   }
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="w-full h-full">
@@ -76,8 +77,8 @@ export default function LineChartCard() {
     )
   }
 
-  // ✅ Enhanced validation with proper TypeScript checks
-  if (!data || data.length < 2 || !data[0] || !data[data.length - 1]) {
+  // ✅ FIXED: Complete validation with TypeScript safety
+  if (!Array.isArray(data) || data.length < 2) {
     return (
       <div className="w-full h-full">
         <Card className="group relative overflow-hidden transition-all duration-300 dark:bg-slate-900/50 border-0 bg-gradient-to-br from-white to-gray-50/30 dark:from-slate-900 dark:to-slate-800/50 backdrop-blur-sm w-full h-full">
@@ -93,18 +94,17 @@ export default function LineChartCard() {
     )
   }
 
-  // ✅ Safe calculation with proper null checks
-  const firstDataPoint = data[0]
-  const lastDataPoint = data[data.length - 1]
-  
-  // Ensure both data points exist and have valid values
-  const totalGrowth = lastDataPoint?.value && firstDataPoint?.value 
-    ? lastDataPoint.value - firstDataPoint.value 
-    : 0
-    
-  const growthPercentage = firstDataPoint?.value && firstDataPoint.value !== 0
-    ? ((totalGrowth / firstDataPoint.value) * 100).toFixed(1)
+  // ✅ FIXED: Completely safe calculations with explicit type checking
+  const firstValue = data[0]?.value ?? 0
+  const lastValue = data[data.length - 1]?.value ?? 0
+  const totalGrowth = lastValue - firstValue
+  const growthPercentage = firstValue !== 0 
+    ? ((totalGrowth / firstValue) * 100).toFixed(1)
     : "0.0"
+
+  const isPositiveGrowth = totalGrowth >= 0
+
+  const totalUsers = data.reduce((sum, item) => sum + (item?.value ?? 0), 0)
 
   return (
     <div className="w-full h-full">
@@ -132,18 +132,15 @@ export default function LineChartCard() {
               </div>
             </div>
             
-            {/* Growth indicator with safe display */}
-            {totalGrowth >= 0 ? (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold self-start sm:self-center">
-                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span>+{growthPercentage}%</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm font-semibold self-start sm:self-center">
-                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
-                <span>{growthPercentage}%</span>
-              </div>
-            )}
+            {/* ✅ FIXED: Safe growth indicator */}
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold self-start sm:self-center ${
+              isPositiveGrowth 
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+            }`}>
+              <TrendingUp className={`w-3 h-3 sm:w-4 sm:h-4 ${isPositiveGrowth ? '' : 'rotate-180'}`} />
+              <span>{isPositiveGrowth ? '+' : ''}{growthPercentage}%</span>
+            </div>
           </div>
         </CardHeader>
 
@@ -200,10 +197,10 @@ export default function LineChartCard() {
                       fontWeight: 500
                     }}
                     tickFormatter={(value) => {
-                      if (value >= 1000) {
+                      if (typeof value === 'number' && value >= 1000) {
                         return `${(value / 1000).toFixed(0)}k`
                       }
-                      return value.toString()
+                      return String(value)
                     }}
                     width={35}
                   />
